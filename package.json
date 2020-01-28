@@ -3,8 +3,18 @@
   "version": "1.0.0",
   "main": "src/server.js",
   "license": "MIT",
+  "scripts": {
+    "test": "jest"
+  },
   "dependencies": {
+    "axios": "^0.19.2",
     "express": "^4.17.1",
     "ws": "^7.2.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.3",
+    "@babel/preset-env": "^7.8.3",
+    "babel-jest": "^25.1.0",
+    "jest": "^25.1.0"
   }
 }
