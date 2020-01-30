@@ -1,3 +1,5 @@
+const userList = require('./UserList');
+
 function createApplications() {
   const applications = {};
   
@@ -7,7 +9,12 @@ function createApplications() {
         info: application,
         admin,
         groups: {},
-        sendToAdmin: msg => admin.send(msg),
+        sendToAdmin: msg => {
+          const user = userList.getUser(admin);
+          if (user) {
+            user.send(msg);
+          }
+        },
         getGroup: groupId => groups[groupId],
       };
     },
@@ -15,7 +22,12 @@ function createApplications() {
     getApplication: id => applications[id],
     addGroup: (id, groupId, users) => applications[id].groups[groupId] = {
       users,
-      sendToAll: message => users.forEach(user => user.send(message)),
+      sendToAll: message => users.forEach(userId => {
+        const user = userList.getUser(userId);
+        if (user) {
+          user.send(message);
+        }
+      }),
     },
   };
 }

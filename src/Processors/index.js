@@ -1,15 +1,22 @@
 const knowns = {
   Login: require('./Login'),
   CreateApp: require('./CreateApp'),
+  ParticipationIntension: require('./ParticipationIntension'),
 };
+const unknown = JSON.stringify({
+  type: 'Error',
+  data: {
+    message: 'Unknown message type',
+  },
+});
 
 module.exports = {
   proccess: ({type, data}, ws) => {
-    const proccessor = knowns[type];
-    if (typeof proccessor === 'function') {
-      proccessor(data, ws);
+    const proccess = knowns[type];
+    if (typeof proccess === 'function') {
+      proccess(data, ws);
     } else {
-      ws.send('{"type":"Error","data":{"message":"Unknown message type"}}');
+      ws.send(unknown);
     }
   }
 }
