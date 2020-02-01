@@ -130,4 +130,20 @@ describe('Login message', () => {
     }
     sendParticipationApproval()
   }, 120000);
+
+  it('Should foward to admin any Weight received from actor', done => {
+    let weight = undefined;
+    clients.admin.onWeight = received => {
+      expect(received).toEqual(weight);
+      done();
+    };
+    async function sendWeight() {
+      weight = await Utils.getWeightData();
+      clients.actor.sendJSON({
+        type: 'Weight',
+        data: weight,
+      });
+    }
+    sendWeight()
+  }, 120000);
 });

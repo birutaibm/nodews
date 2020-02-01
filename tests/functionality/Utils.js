@@ -135,6 +135,70 @@ async function getParticipationIntensionMessage() {
   };
 }
 
+function getApplicationWithGroup() {
+  const appId = Applications.getApplicationIds()
+    .find(id => {
+      const groups = Applications.getApplication(id).groups
+      return Object.keys(groups).length > 0;
+    });
+  if (appId) {
+    return Applications.getApplication(appId);
+  } else {
+    return false;
+  }
+}
+
+function generateRandomNumbers(qtd) {
+  const rand = [];
+  let sum = 0;
+  for (let index = 0; index < qtd; index++) {
+    rand[index] = Math.random;
+    sum += rand[index];
+  }
+  const factor = 1.0/sum;
+  return rand.map(value => factor * value);
+}
+function generateWeightDimComponents(ids) {
+  const values = generateRandomNumbers(ids.length);
+  return ids.map((id, index) => {
+    return {
+      weightableId: id,
+      weightableType: 'DIM',
+      value: values[index],
+    };
+  });
+}
+function generateWeightCriComponents(ids) {
+  const values = generateRandomNumbers(ids.length);
+  return ids.map((id, index) => {
+    return {
+      weightableId: id,
+      weightableType: 'CRI',
+      value: values[index],
+    };
+  });
+}
+function generateWeightComponents(application) {
+  const dimensions = application.info.scenario.dimensions;
+  let components = generateWeightDimComponents(dimensions.map(dim => dim.id));
+  dimensions.forEach(dim =>
+    components = [
+      ...components,
+      ...generateWeightCriComponents((dim.criteria.map(cri => cri.id))),
+    ]
+  );
+}
+async function getWeightData() {
+  const application = await retryUntilSuccess(getApplicationWithGroup);
+  const group = Object.keys(application.groups)[0];
+  const components = generateWeightComponents(application);
+  return {
+    group,
+    step: 1,
+    components,
+  };
+}
+
 module.exports = {
   adminLogin,
   wrongLogin,
@@ -144,4 +208,5 @@ module.exports = {
   semaphore,
   tempClient,
   getParticipationIntensionMessage,
+  getWeightData,
 }
