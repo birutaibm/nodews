@@ -1,4 +1,3 @@
-const userList = require('../UserList');
 const Applications = require('../Applications');
 
 function process(intension, ws) {

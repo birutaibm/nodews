@@ -47,7 +47,7 @@ describe('Login message', () => {
         expect(msg.data.message).toBe('Unathorized Access');
       },
       done);
-  }, 30000);
+  }, 120000);
 
   it('Should create an admin User for email "solangegarcia@fearp.usp.br"', done => {
     clients.admin.sendJSON(Utils.adminLogin);
@@ -59,7 +59,7 @@ describe('Login message', () => {
       }
     }
     verify();
-  }, 30000);
+  }, 120000);
 
   it('Should return AppInfo when admin send CreateApp message', done => {
     let appName = undefined;
@@ -74,7 +74,7 @@ describe('Login message', () => {
     }
     clients.admin.onAppInfo = testMessage;
     sendCreateAppMessage();
-  }, 30000);
+  }, 120000);
 
   it('Should return AppInfo when user log in existing application', done => {
     let appName = undefined;
@@ -97,7 +97,7 @@ describe('Login message', () => {
     clients.actor.onAppInfo = testActorMessage;
     clients.admin.onNewActor = testAdminMessage;
     sendUserLogin();
-  }, 30000);
+  }, 120000);
 
   it('Should foward to admin any ParticipationIntension received from actor', done => {
     let pi = undefined;
@@ -110,5 +110,24 @@ describe('Login message', () => {
       clients.actor.sendJSON(pi);
     }
     sendParticipationIntension()
-  });
+  }, 120000);
+
+  it('Should send ParticipationApproved to actor when receive ParticipationApproval from admin', done => {
+    let pi = undefined;
+    clients.actor.onParticipationApproved = received => {
+      expect(received.groupId).toBe(pi.data.groupId);
+      expect(received.groupName).toBe(pi.data.groupName);
+      const participation = received.participants[pi.data.actorName];
+      expect(participation).toBe(pi.data.characterName);
+      done();
+    };
+    async function sendParticipationApproval() {
+      pi = await Utils.getParticipationIntensionMessage();
+      clients.admin.sendJSON({
+        type: 'ParticipationApproval',
+        data: {approved: [pi.data]},
+      });
+    }
+    sendParticipationApproval()
+  }, 120000);
 });

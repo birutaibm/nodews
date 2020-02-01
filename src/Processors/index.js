@@ -2,6 +2,7 @@ const knowns = {
   Login: require('./Login'),
   CreateApp: require('./CreateApp'),
   ParticipationIntension: require('./ParticipationIntension'),
+  ParticipationApproval: require('./ParticipationApproval'),
 };
 const unknown = JSON.stringify({
   type: 'Error',
