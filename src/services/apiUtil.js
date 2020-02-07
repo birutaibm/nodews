@@ -1,9 +1,3 @@
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: 'https://assabi-back.herokuapp.com',
-});
-
 function axiosCatch(stackTrace) {
   return error => {
     let errorMessage = error.message;
@@ -33,27 +27,7 @@ function getStackTrace() {
   return split.join('\n');
 }
 
-async function get(endpoint, config) {
-  const stackTrace = getStackTrace();
-
-  return await api
-    .get(endpoint, config)
-    .catch(axiosCatch(stackTrace));
-}
-
-function withCatch(func, ...params) {
-  return func(...params).catch(axiosCatch(stackTrace));
-}
-
-async function post(endpoint, data, config) {
-  const stackTrace = getStackTrace();
-
-  return await api
-    .post(endpoint, data, config)
-    .catch(axiosCatch(stackTrace));
-}
-
-// api.get = get;
-// api.post = post;
-
-module.exports = api;
+module.exports = {
+  getStackTrace,
+  axiosCatch,
+};

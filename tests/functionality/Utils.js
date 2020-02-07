@@ -152,12 +152,13 @@ function generateRandomNumbers(qtd) {
   const rand = [];
   let sum = 0;
   for (let index = 0; index < qtd; index++) {
-    rand[index] = Math.random;
+    rand[index] = Math.random();
     sum += rand[index];
   }
   const factor = 1.0/sum;
   return rand.map(value => factor * value);
 }
+
 function generateWeightDimComponents(ids) {
   const values = generateRandomNumbers(ids.length);
   return ids.map((id, index) => {
@@ -168,6 +169,7 @@ function generateWeightDimComponents(ids) {
     };
   });
 }
+
 function generateWeightCriComponents(ids) {
   const values = generateRandomNumbers(ids.length);
   return ids.map((id, index) => {
@@ -178,6 +180,7 @@ function generateWeightCriComponents(ids) {
     };
   });
 }
+
 function generateWeightComponents(application) {
   const dimensions = application.info.scenario.dimensions;
   let components = generateWeightDimComponents(dimensions.map(dim => dim.id));
@@ -187,16 +190,21 @@ function generateWeightComponents(application) {
       ...generateWeightCriComponents((dim.criteria.map(cri => cri.id))),
     ]
   );
+  return components;
 }
+
 async function getWeightData() {
   const application = await retryUntilSuccess(getApplicationWithGroup);
   const group = Object.keys(application.groups)[0];
+  const actors = application.groups[group];
+  const userId = actors[0];
   const components = generateWeightComponents(application);
-  return {
+  const weights = {
     group,
     step: 1,
     components,
   };
+  return {userId, weights};
 }
 
 module.exports = {

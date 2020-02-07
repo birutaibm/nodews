@@ -1,7 +1,9 @@
+
 describe('Login message', () => {
   let server = undefined;
   const clients = {};
   const Utils = require('./Utils')
+  const Applications = require('../../src/Applications');
 
   beforeAll(done => {
     server = require('../../src/server');
@@ -15,6 +17,9 @@ describe('Login message', () => {
           const msg = JSON.parse(data);
           expect(typeof msg).toBe('object');
           const event = clients[key]['on'+msg.type];
+          if (!event) {
+            console.log(data);
+          }
           expect(typeof event).toBe('function');
           event(msg.data);
         };
@@ -129,21 +134,60 @@ describe('Login message', () => {
       });
     }
     sendParticipationApproval()
-  }, 120000);
+  }, 30000);
 
   it('Should foward to admin any Weight received from actor', done => {
     let weight = undefined;
-    clients.admin.onWeight = received => {
+    clients.admin.onWeights = received => {
       expect(received).toEqual(weight);
       done();
     };
-    async function sendWeight() {
+    async function sendWeights() {
       weight = await Utils.getWeightData();
       clients.actor.sendJSON({
-        type: 'Weight',
+        type: 'Weights',
         data: weight,
       });
     }
-    sendWeight()
-  }, 120000);
+    sendWeights();
+  }, 30000);
+
+  it('Should send Distances to both when receives ApproveWeights from admin', done => {
+    let weight = undefined;
+    const semaphore = Utils.semaphore(2, done);
+    const onDistances = received => {
+      expect(received.group).toBe(weight.weights.group);
+      expect(received.step).toBe(weight.weights.step);
+      expect(Array.isArray(received.distances)).toBe(true);
+      received.distances.forEach(distance => {
+        expect(typeof distance.name).toBe('string');
+        expect(typeof distance.description).toBe('string');
+        expect(distance.value).toBeGreaterThanOrEqual(0);
+        expect(Array.isArray(distance.dimensions)).toBe(true);
+        distance.dimensions.forEach(dimension => {
+          expect(typeof dimension.name).toBe('string');
+          expect(dimension.value).toBeGreaterThanOrEqual(0);
+          expect(Array.isArray(dimension.criteria)).toBe(true);
+          dimension.criteria.forEach(criterion => {
+            expect(typeof criterion.name).toBe('string');
+            expect(typeof criterion.description).toBe('string');
+            expect(criterion.value).toBeGreaterThanOrEqual(0);
+          });
+        });
+      });
+      semaphore.add();
+    };
+    clients.admin.onDistances = onDistances;
+    clients.actor.onDistances = onDistances;
+    async function sendApproveWeights() {
+      weight = await Utils.getWeightData();
+      const app = Applications.getApplicationFromGroup(weight.weights.group);
+      weight.userId = app.admin;
+      clients.admin.sendJSON({
+        type: 'ApproveWeights',
+        data: weight,
+      });
+    }
+    sendApproveWeights();
+  }, 30000);
 });

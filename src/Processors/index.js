@@ -3,7 +3,8 @@ const knowns = {
   CreateApp: require('./CreateApp'),
   ParticipationIntension: require('./ParticipationIntension'),
   ParticipationApproval: require('./ParticipationApproval'),
-  Weight: require('./Weight'),
+  Weights: require('./Weights'),
+  ApproveWeights: require('./ApproveWeights'),
 };
 const unknown = JSON.stringify({
   type: 'Error',
